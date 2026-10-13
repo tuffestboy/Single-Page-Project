@@ -1,5 +1,5 @@
-# School-Tools
+# Single Page Project
 
-Aantal handige tools voor school en dergelijke.
+Handige single Html file tools
 
 (gemaakt met AI)
