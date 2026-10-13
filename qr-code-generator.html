@@ -297,7 +297,7 @@
         input[type="color"]:focus-visible,
         button:focus-visible,
         a:focus-visible {
-            outline: 3px solid #f0a56b;
+            outline: 3px solid var(--green);
             outline-offset: 3px;
         }
 
@@ -432,17 +432,25 @@
 
         .qr-frame {
             display: grid;
-            min-height: 280px;
+            width: min(100%, 320px);
+            height: 320px;
+            min-width: 220px;
+            min-height: 220px;
+            max-width: min(80vw, 560px);
+            max-height: 80vh;
             place-items: center;
+            grid-template-columns: minmax(0, 1fr);
             padding: 20px;
-            overflow: hidden;
+            overflow: auto;
             background: #f5f6f1;
             border: 1px dashed #d9e1d8;
             border-radius: 15px;
+            resize: both;
         }
 
         #qr-code {
             display: grid;
+            width: 100%;
             max-width: 100%;
             place-items: center;
             padding: 10px;
@@ -453,6 +461,7 @@
         #qr-code canvas,
         #qr-code img {
             display: block;
+            width: 100%;
             max-width: 100%;
             height: auto;
         }
@@ -836,7 +845,7 @@
 
             <aside class="panel preview" aria-labelledby="preview-title">
                 <h2 id="preview-title">Live preview</h2>
-                <p>Scan it with your phone to test it.</p>
+                <p>Scan it with your phone to test it. Drag the lower-right corner to resize the preview.</p>
                 <div class="qr-frame">
                     <div id="qr-code" aria-label="Generated QR code"></div>
                     <div class="empty-state" id="empty-state">Enter some text or a link to create your QR code.</div>
@@ -862,6 +871,7 @@
         const darkInput = document.querySelector('#qr-dark');
         const lightInput = document.querySelector('#qr-light');
         const qrContainer = document.querySelector('#qr-code');
+        const qrFrame = document.querySelector('.qr-frame');
         const emptyState = document.querySelector('#empty-state');
         const status = document.querySelector('#status');
         const downloadButton = document.querySelector('#download-button');
@@ -869,6 +879,11 @@
         const wifiSecurity = document.querySelector('#wifi-security');
         const wifiPasswordField = document.querySelector('#wifi-password-field');
         let currentQrModel = null;
+
+        function updateQrFrameBounds() {
+            const availableWidth = window.innerWidth - qrFrame.getBoundingClientRect().left - 24;
+            qrFrame.style.maxWidth = `${Math.max(220, Math.min(560, availableWidth))}px`;
+        }
 
         function getFieldValue(id) {
             return document.querySelector(`#${id}`).value.trim();
@@ -1232,6 +1247,7 @@
 
         settingsForm.addEventListener('input', updateQrCode);
         settingsForm.addEventListener('change', updateQrCode);
+        window.addEventListener('resize', updateQrFrameBounds);
         downloadButton.addEventListener('click', downloadQrCode);
         document.querySelector('#clear-button').addEventListener('click', () => {
             const activeFields = document.querySelector(`[data-mode-fields="${typeInput.value}"]`);
@@ -1246,6 +1262,7 @@
             updateQrCode();
         });
 
+        updateQrFrameBounds();
         updateQrCode();
     </script>
 </body>
