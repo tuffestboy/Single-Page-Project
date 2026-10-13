@@ -1,6 +1,6 @@
 # Single Page Project
 
-A collection of small, practical tools built as standalone HTML pages. Open a page in your browser and use it directly—no app installation or project-wide build step required.
+A growing collection of practical, standalone HTML tools. The homepage brings the tools together in one place; open any tool in your browser and use it directly, with no app installation or project-wide build step.
 
 ## What you’ll find here
 
@@ -8,21 +8,22 @@ Each tool is intended to be its own focused page: lightweight, easy to access, a
 
 ## Getting started
 
-1. Clone or download this repository.
-2. Open the HTML page for the tool you want to use in a modern web browser.
+1. Visit the published GitHub Pages site, or clone or download this repository.
+2. Choose a tool from the homepage.
 3. Follow the instructions on that page.
 
-There is no project-wide package installation or build command. Some pages may load optional fonts or libraries from a CDN, so an internet connection may be needed for those features.
+To use the pages locally, open `index.html` in a modern web browser. There is no project-wide package installation or build command. Some tools may load optional fonts or libraries from a CDN, so an internet connection may be needed for those features.
 
 ## Project structure
 
 ```text
 Single-Page-Project/
-├── index.html       # A single-page tool
+├── index.html          # Collection homepage and tool directory
+├── resume-builder.html # Resume Builder tool
 └── README.md
 ```
 
-As the collection grows, additional standalone HTML pages can be added alongside the existing ones. Keep each page focused and include any usage instructions the tool needs.
+Add new tools as standalone HTML pages in the repository root, then add a descriptive link to the homepage so they are easy to find. Keep each page focused and include any tool-specific usage instructions with it.
 
 ## Built with
 
@@ -30,4 +31,8 @@ As the collection grows, additional standalone HTML pages can be added alongside
 - CSS
 - JavaScript
 
-Tools may use external browser libraries or assets when needed; any such requirements should be documented with the relevant page.
+Tools may use external browser libraries or assets when needed; document any such requirements with the relevant page.
+
+## Publishing with GitHub Pages
+
+In the repository settings, open **Pages**, select the branch you want to publish and the repository root (`/`) as the source, then save. GitHub Pages will serve `index.html` as the site homepage. Tool links are relative, so they work both on a GitHub Pages project site and when the pages are opened locally.

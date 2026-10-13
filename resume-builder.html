@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resume Builder | Single Page Project</title>
+
+    <!-- Fonts (Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Serif+4:wght@400;600&display=swap">
+
+    <!-- Library for generating a PDF from the resume -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* ==========================================================
+           CONTENTS
+           1. Variables (app colors)
+           2. Basics
+           3. App layout
+           4. Form on the left
+           5. Preview on the right
+           6. Resume: shared styles
+           7. Resume: sidebar design
+           8. Resume: classic design
+           9. Small screens
+           10. Printing
+           ========================================================== */
+
+
+        /* ---------- 1. Variables ---------- */
+        :root {
+            --accent: #1f3a5f;
+            /* Resume color, updated by the color picker */
+
+            --ui-bg: #e8ebf0;
+            /* App background */
+            --ui-panel: #ffffff;
+            /* Form background */
+            --ui-ink: #1c2330;
+            /* Text color */
+            --ui-mute: #667085;
+            /* Muted text */
+            --ui-line: #d8dde5;
+            /* Borders */
+            --ui-button: #1f3a5f;
+            /* Primary button */
+        }
+
+
+        /* ---------- 2. Basics ---------- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            font-size: 14px;
+            color: var(--ui-ink);
+            background: var(--ui-bg);
+        }
+
+        button {
+            font: inherit;
+            cursor: pointer;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible,
+        select:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+
+        /* ---------- 3. App layout ---------- */
+        .app {
+            display: grid;
+            grid-template-columns: minmax(320px, 420px) 1fr;
+            /* Form | preview */
+            height: 100%;
+        }
+
+
+        /* ---------- 4. Form on the left ---------- */
+        .editor {
+            padding: 20px 20px 40px;
+            overflow-y: auto;
+            background: var(--ui-panel);
+            border-right: 1px solid var(--ui-line);
+        }
+
+        .editor h1 {
+            margin: 0 0 4px;
+            font-size: 20px;
+        }
+
+        .editor .lead {
+            margin: 0 0 18px;
+            line-height: 1.5;
+            color: var(--ui-mute);
+        }
+
+        /* Buttons at the top */
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--ui-button);
+            border: 0;
+            border-radius: 8px;
+        }
+
+        .btn:hover {
+            filter: brightness(1.15);
+        }
+
+        .btn[disabled] {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .btn.ghost {
+            font-weight: 500;
+            color: var(--ui-ink);
+            background: transparent;
+            border: 1px solid var(--ui-line);
+        }
+
+        .btn.ghost:hover {
+            background: #f3f5f8;
+            filter: none;
+        }
+
+        /* Collapsible sections (Layout, Personal, ...) */
+        details.section {
+            padding: 4px 0;
+            border-top: 1px solid var(--ui-line);
+        }
+
+        details.section>summary {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        details.section>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.section>summary::after {
+            content: '+';
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1;
+            color: var(--ui-mute);
+        }
+
+        details.section[open]>summary::after {
+            content: '−';
+        }
+
+        /* Input fields */
+        .field {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .field>span {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 12px;
+            color: var(--ui-mute);
+        }
+
+        .field input[type="text"],
+        .field input[type="email"],
+        .field input[type="tel"],
+        .field textarea,
+        .field select {
+            width: 100%;
+            padding: 8px 10px;
+            font: inherit;
+            color: var(--ui-ink);
+            background: #fff;
+            border: 1px solid var(--ui-line);
+            border-radius: 6px;
+        }
+
+        .field textarea {
+            min-height: 70px;
+            line-height: 1.45;
+            resize: vertical;
+        }
+
+        .field.checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field.checkbox>span {
+            margin: 0;
+            font-size: 14px;
+            color: var(--ui-ink);
+        }
+
+        .row-two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* A job or education item in the form */
+        .item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #fafbfc;
+            border: 1px solid var(--ui-line);
+            border-radius: 8px;
+        }
+
+        .item-tools {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .mini {
+            padding: 3px 9px;
+            font-size: 12px;
+            color: var(--ui-mute);
+            background: #fff;
+            border: 1px solid var(--ui-line);
+            border-radius: 6px;
+        }
+
+        .mini:hover {
+            background: #f0f2f5;
+        }
+
+        .mini.danger:hover {
+            color: #b42318;
+            border-color: #b42318;
+        }
+
+        .add-button {
+            width: 100%;
+            padding: 9px;
+            color: var(--ui-mute);
+            background: transparent;
+            border: 1.5px dashed var(--ui-line);
+            border-radius: 8px;
+        }
+
+        .add-button:hover {
+            color: var(--ui-button);
+            border-color: var(--ui-button);
+        }
+
+        /* Color picker */
+        .swatches {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .swatch {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px var(--ui-line);
+        }
+
+        .swatch.selected {
+            box-shadow: 0 0 0 2px var(--ui-ink);
+        }
+
+        input[type="color"] {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: none;
+            border: 0;
+            cursor: pointer;
+        }
+
+        /* Photo */
+        .photo-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .photo-row img {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            background: #eee;
+            border-radius: 50%;
+        }
+
+
+        /* ---------- 5. Preview on the right ---------- */
+        .preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            overflow: auto;
+        }
+
+        .preview-info {
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: var(--ui-mute);
+        }
+
+        /* White page with a shadow. Width and height are set by the code. */
+        .paper {
+            position: relative;
+            background: #fff;
+            box-shadow: 0 6px 30px rgba(20, 30, 50, 0.18);
+        }
+
+        /* The resume is scaled down to fit the screen */
+        .scaler {
+            width: 210mm;
+            transform-origin: top left;
+        }
+
+        /* Red lines mark where a new page starts */
+        .page-guides {
+            position: absolute;
+            inset: 0;
+            width: 210mm;
+            pointer-events: none;
+            transform-origin: top left;
+            background: repeating-linear-gradient(to bottom,
+                    transparent 0,
+                    transparent calc(297mm - 2px),
+                    rgba(220, 38, 38, 0.55) calc(297mm - 2px),
+                    rgba(220, 38, 38, 0.55) 297mm);
+        }
+
+
+        /* ---------- 6. Resume: shared styles ----------
+           Adjust font sizes here. They scale automatically
+           when the resume is fitted onto one page (--text-scale). */
+        .cv {
+            --text-scale: 1;
+            --size-base: calc(10pt * var(--text-scale));
+            --size-name: calc(27pt * var(--text-scale));
+            --size-role: calc(12pt * var(--text-scale));
+            --size-heading: calc(12.5pt * var(--text-scale));
+            --size-side-heading: calc(11pt * var(--text-scale));
+            --size-job-title: calc(10.5pt * var(--text-scale));
+            --size-detail: calc(9.5pt * var(--text-scale));
+            --size-small: calc(9pt * var(--text-scale));
+            --size-label: calc(8pt * var(--text-scale));
+
+            width: 210mm;
+            /* A4 width */
+            min-height: 297mm;
+            /* A4 height */
+            font-size: var(--size-base);
+            line-height: 1.45;
+            color: #222;
+            background: #fff;
+        }
+
+        /* Font selection */
+        .cv.font-sans {
+            --heading-font: 'DM Sans', Arial, sans-serif;
+            font-family: 'DM Sans', Arial, sans-serif;
+        }
+
+        .cv.font-serif {
+            --heading-font: 'Fraunces', Georgia, serif;
+            font-family: 'Source Serif 4', Georgia, serif;
+            line-height: 1.5;
+        }
+
+        .cv h1,
+        .cv h2,
+        .cv h3,
+        .cv p,
+        .cv ul {
+            margin: 0;
+        }
+
+        .cv ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        .cv .name {
+            font-family: var(--heading-font);
+            font-size: var(--size-name);
+            font-weight: 600;
+            line-height: 1.1;
+        }
+
+        .cv .role {
+            margin-top: 4px;
+            font-size: var(--size-role);
+        }
+
+        /* Job or education */
+        .cv .job,
+        .cv .edu {
+            margin-bottom: 11px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .cv .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .cv .job-title {
+            font-size: var(--size-job-title);
+            font-weight: 700;
+        }
+
+        .cv .job-company {
+            font-size: var(--size-detail);
+        }
+
+        .cv .period {
+            font-size: var(--size-small);
+            white-space: nowrap;
+        }
+
+        /* Bulleted list */
+        .cv .bullets {
+            margin-top: 4px;
+        }
+
+        .cv .bullets li {
+            position: relative;
+            padding-left: 12px;
+            margin-bottom: 2px;
+        }
+
+        .cv .bullets li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.62em;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+
+        /* ---------- 7. Resume: sidebar design ---------- */
+        .design-side {
+            display: grid;
+            grid-template-columns: 68mm 1fr;
+            /* Sidebar | main content */
+        }
+
+        .design-side aside {
+            padding: 14mm 8mm;
+            color: #fff;
+            background: var(--accent);
+        }
+
+        .design-side main {
+            padding: 14mm 12mm 12mm;
+        }
+
+        .design-side .photo {
+            display: block;
+            width: 38mm;
+            height: 38mm;
+            margin: 0 auto 8mm;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+        }
+
+        /* Sidebar */
+        .design-side aside section {
+            margin-bottom: 8mm;
+        }
+
+        .design-side aside h2 {
+            padding-bottom: 4px;
+            margin: 0 0 6px;
+            font-family: var(--heading-font);
+            font-size: var(--size-side-heading);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .design-side aside li {
+            margin-bottom: 5px;
+            font-size: var(--size-detail);
+            word-break: break-word;
+        }
+
+        .design-side aside .label {
+            display: block;
+            font-size: var(--size-label);
+            opacity: 0.7;
+        }
+
+        /* Main content */
+        .design-side .head {
+            margin-bottom: 8mm;
+        }
+
+        .design-side .role {
+            color: var(--accent);
+        }
+
+        .design-side main section {
+            margin-bottom: 7mm;
+        }
+
+        .design-side main h2 {
+            padding-bottom: 3px;
+            margin: 0 0 8px;
+            font-family: var(--heading-font);
+            font-size: var(--size-heading);
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .design-side .period,
+        .design-side .job-company {
+            color: #555;
+        }
+
+
+        /* ---------- 8. Resume: classic design ---------- */
+        .design-classic {
+            padding: 16mm 18mm;
+        }
+
+        .design-classic .head {
+            display: flex;
+            align-items: center;
+            gap: 7mm;
+            padding-bottom: 6mm;
+            margin-bottom: 7mm;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .design-classic .photo {
+            width: 30mm;
+            height: 30mm;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .design-classic .role {
+            color: var(--accent);
+        }
+
+        .design-classic .contact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px 14px;
+            margin-top: 8px;
+            font-size: var(--size-detail);
+            color: #444;
+        }
+
+        .design-classic section {
+            margin-bottom: 7mm;
+        }
+
+        .design-classic h2 {
+            padding-bottom: 3px;
+            margin: 0 0 7px;
+            font-family: var(--heading-font);
+            font-size: var(--size-heading);
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 1px solid #ccd;
+        }
+
+        .design-classic .period,
+        .design-classic .job-company {
+            color: #555;
+        }
+
+        .design-classic .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .design-classic .chips li {
+            padding: 1px 10px;
+            font-size: var(--size-small);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 99px;
+        }
+
+        .design-classic .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10mm;
+        }
+
+
+        /* ---------- 9. Small screens ---------- */
+        @media (max-width: 900px) {
+
+            html,
+            body {
+                height: auto;
+            }
+
+            .app {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .editor {
+                border-right: 0;
+                border-bottom: 1px solid var(--ui-line);
+            }
+        }
+
+
+        /* ---------- 10. Printing ---------- */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @media print {
+
+            html,
+            body {
+                height: auto;
+                background: #fff;
+            }
+
+            .editor,
+            .preview-info,
+            .page-guides {
+                display: none !important;
+            }
+
+            .app {
+                display: block;
+            }
+
+            .preview {
+                display: block;
+                padding: 0;
+                overflow: visible;
+            }
+
+            .paper {
+                width: auto !important;
+                height: auto !important;
+                box-shadow: none;
+            }
+
+            .scaler {
+                transform: none !important;
+            }
+
+            /* Print colors as well */
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* "Fit on one page": prevent an empty second page */
+            .cv.one-page {
+                height: 296mm;
+                min-height: 0;
+                overflow: hidden;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="app">
+
+        <!-- Form on the left -->
+        <div class="editor" id="editor">
+            <h1>Resume Builder</h1>
+            <p class="lead">
+                Enter your details and see the result on the right.
+                Your changes are saved automatically in your browser.
+            </p>
+
+            <div class="actions">
+                <button class="btn" id="btn-download">Download PDF</button>
+                <button class="btn ghost" id="btn-print"
+                    title="Opens the print dialog; choose 'Save as PDF'. The text remains selectable.">
+                    Print / selectable PDF
+                </button>
+                <button class="btn ghost" id="btn-open"
+                    title="Open a PDF created with this resume builder and continue where you left off.">
+                    Open PDF
+                </button>
+                <button class="btn ghost" id="btn-reset">Restore sample</button>
+                <input type="file" id="file-open" accept=".pdf,application/pdf" hidden>
+            </div>
+
+            <!-- renderForm() populates the form -->
+            <div id="form"></div>
+        </div>
+
+        <!-- Resume preview on the right -->
+        <div class="preview" id="preview">
+            <div class="preview-info" id="preview-info"></div>
+            <div class="paper" id="paper">
+                <div class="scaler" id="scaler">
+                    <div class="cv" id="cv"></div>
+                </div>
+                <div class="page-guides" id="page-guides"></div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+        /* ==========================================================
+           CONTENTS
+           1. Settings
+           2. Sample data
+           3. Data and storage
+           4. Helper functions
+           5. Form (left)
+           6. Build resume
+           7. Show preview (right)
+           8. Photo
+           9. Save data in and open PDFs
+           10. Download PDF
+           11. Connect buttons and inputs
+           12. Start
+           ========================================================== */
+
+
+        /* ---------- 1. Settings ---------- */
+
+        // Do not change these values, or the app will no longer recognize existing storage and PDFs.
+        const STORAGE_KEY = 'cv-maker-v1';
+        const PDF_DATA_MARKER = 'CVDATA1:';
+
+        // Colors in the color picker (dark enough for white text in the sidebar)
+        const ACCENT_COLORS = ['#1f3a5f', '#0f5c5c', '#7a2e3b', '#3d5a40', '#5b3f8c', '#2b2b2b'];
+
+        const A4_HEIGHT_PX = 297 / 25.4 * 96;   // A4 height in pixels
+        const MIN_TEXT_SCALE = 0.7;             // text is never scaled below 70%
+        const TEXT_SCALE_STEP = 0.02;           // amount to scale down text per step
+        const PHOTO_SIZE_PX = 10000;             // maximum saved square photo size
+        const PDF_ONE_PAGE_HEIGHT_PX = 1121;    // slightly less than A4 to prevent a blank second page
+
+        // Empty fields for a new job or education item
+        const NEW_ITEM = {
+            jobs: { role: '', company: '', period: '', desc: '' },
+            internships: { role: '', company: '', period: '', desc: '' },
+            edus: { name: '', school: '', period: '' },
+        };
+
+
+        /* ---------- 2. Sample data ----------
+           This is shown the first time someone opens the app. */
+        const SAMPLE_DATA = {
+            name: 'Alex Morgan',
+            title: 'Job Title',
+            email: 'alex.morgan@example.com',
+            phone: '+1 555 010 2040',
+            city: 'City, State',
+            web: 'example.com',
+            photo: '',
+
+            summary: 'Write a short introduction about who you are, what you do well, and what you are looking for. Keep it to two to four sentences.',
+
+            jobs: [
+                {
+                    role: 'Job Title',
+                    company: 'Company Name, City',
+                    period: '2022 – Present',
+                    desc: 'Describe a task or responsibility\nShare a measurable result\nAdd another achievement',
+                },
+                {
+                    role: 'Previous Job Title',
+                    company: 'Another Company, City',
+                    period: '2019 – 2022',
+                    desc: 'Describe what you did in this role\nShare an achievement you are proud of',
+                },
+            ],
+
+            internships: [
+                {
+                    role: 'Internship as [Job Title]',
+                    company: 'Company Name, City',
+                    period: '2021',
+                    desc: 'Describe your responsibilities during the internship\nShare something you learned',
+                },
+            ],
+
+            edus: [
+                { name: 'Degree or Qualification', school: 'School Name', period: '2016 – 2019' },
+            ],
+
+            skills: 'Skill 1, Skill 2, Skill 3, Skill 4',
+            langs: 'English – Native\nSpanish – Proficient',
+
+            // Layout
+            template: 'side',       // 'side' (sidebar) or 'classic'
+            font: 'sans',           // 'sans' or 'serif'
+            color: '#1f3a5f',
+            onePage: true,
+        };
+
+
+        /* ---------- 3. Data and storage ---------- */
+
+        // All user-entered values are stored in this object.
+        let data = loadData();
+
+        /**
+         * Combines saved data with the sample to fill in any missing fields.
+         * Older saved data or PDFs may not include internships, so leave them empty instead of showing the sample.
+         */
+        function mergeWithSample(saved) {
+            const merged = Object.assign(structuredClone(SAMPLE_DATA), saved);
+            if (!Array.isArray(saved.internships)) merged.internships = [];
+            return merged;
+        }
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    return mergeWithSample(JSON.parse(saved));
+                }
+            } catch (error) {
+                // Storage is unavailable or invalid; start with the sample.
+            }
+            return structuredClone(SAMPLE_DATA);
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (error) {
+                // Storage is full or disabled; the app can continue to work.
+            }
+        }
+
+        /** Save data and refresh the preview. */
+        function update() {
+            saveData();
+            renderCv();
+        }
+
+        /** Save data and refresh both the form and preview (for example, after adding or removing an item). */
+        function updateAll() {
+            saveData();
+            renderForm();
+            renderCv();
+        }
+
+
+        /* ---------- 4. Helper functions ---------- */
+
+        const $ = (selector) => document.querySelector(selector);
+
+        const dom = {
+            editor: $('#editor'),
+            form: $('#form'),
+            preview: $('#preview'),
+            previewInfo: $('#preview-info'),
+            paper: $('#paper'),
+            scaler: $('#scaler'),
+            guides: $('#page-guides'),
+            cv: $('#cv'),
+        };
+
+        /** Escape text before inserting it into HTML. */
+        function escapeHtml(text) {
+            const replacements = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+            return String(text ?? '').replace(/[&<>"']/g, (char) => replacements[char]);
+        }
+
+        /** Split text into lines and remove empty lines. */
+        function splitLines(text) {
+            return String(text || '')
+                .split('\n')
+                .map((line) => line.trim())
+                .filter(Boolean);
+        }
+
+        /** How many A4 pages fit this height in pixels? */
+        function countPages(heightPx) {
+            return Math.max(1, Math.ceil((heightPx - 2) / A4_HEIGHT_PX));
+        }
+
+
+        /* ---------- 5. Form (left) ---------- */
+
+        // Reusable form elements
+        function textField(label, key, type = 'text') {
+            return `
+                <label class="field">
+                    <span>${label}</span>
+                    <input type="${type}" data-key="${key}" value="${escapeHtml(data[key])}">
+                </label>`;
+        }
+
+        function listInput(label, list, index, field) {
+            const value = data[list][index][field];
+            return `
+                <label class="field">
+                    <span>${label}</span>
+                    <input type="text" data-list="${list}" data-index="${index}" data-field="${field}" value="${escapeHtml(value)}">
+                </label>`;
+        }
+
+        function listTextarea(label, list, index, field, rows) {
+            const value = data[list][index][field];
+            return `
+                <label class="field">
+                    <span>${label}</span>
+                    <textarea rows="${rows}" data-list="${list}" data-index="${index}" data-field="${field}">${escapeHtml(value)}</textarea>
+                </label>`;
+        }
+
+        function itemTools(list, index) {
+            const attrs = `data-list="${list}" data-index="${index}"`;
+            return `
+                <div class="item-tools">
+                    <button class="mini" data-action="up" ${attrs}>Move up</button>
+                    <button class="mini" data-action="down" ${attrs}>Move down</button>
+                    <button class="mini danger" data-action="delete" ${attrs}>Remove</button>
+                </div>`;
+        }
+
+        // Form sections
+        function formLayoutSection() {
+            const swatches = ACCENT_COLORS.map((color) => `
+                <button class="swatch ${data.color === color ? 'selected' : ''}"
+                    style="background:${color}" data-color="${color}" aria-label="Color ${color}"></button>`).join('');
+
+            return `
+                <details class="section" data-section="layout" open>
+                    <summary>Layout</summary>
+
+                    <label class="field">
+                        <span>Design</span>
+                        <select data-key="template">
+                            <option value="side" ${data.template === 'side' ? 'selected' : ''}>Sidebar</option>
+                            <option value="classic" ${data.template === 'classic' ? 'selected' : ''}>Classic, one column</option>
+                        </select>
+                    </label>
+
+                    <label class="field">
+                        <span>Font</span>
+                        <select data-key="font">
+                            <option value="sans" ${data.font === 'sans' ? 'selected' : ''}>Modern (sans serif)</option>
+                            <option value="serif" ${data.font === 'serif' ? 'selected' : ''}>Elegant (serif)</option>
+                        </select>
+                    </label>
+
+                    <label class="field checkbox">
+                        <input type="checkbox" id="option-one-page" ${data.onePage ? 'checked' : ''}>
+                        <span>Fit on one page (automatically shrinks text if needed)</span>
+                    </label>
+
+                    <div class="field">
+                        <span>Color</span>
+                        <div class="swatches">
+                            ${swatches}
+                            <input type="color" id="option-custom-color" value="${data.color}" aria-label="Custom color">
+                        </div>
+                    </div>
+                </details>`;
+        }
+
+        function formPersonalSection() {
+            const photoPreview = data.photo ? `<img src="${data.photo}" alt="">` : '';
+            const removeButton = data.photo ? '<button class="mini danger" id="btn-remove-photo">Remove</button>' : '';
+
+            return `
+                <details class="section" data-section="personal" open>
+                    <summary>Personal</summary>
+                    ${textField('Full name', 'name')}
+                    ${textField('Job title', 'title')}
+                    <div class="row-two">
+                        ${textField('E-mail', 'email', 'email')}
+                        ${textField('Phone', 'phone', 'tel')}
+                    </div>
+                    <div class="row-two">
+                        ${textField('City', 'city')}
+                        ${textField('Website or LinkedIn', 'web')}
+                    </div>
+                    <div class="field">
+                        <span>Photo (optional)</span>
+                        <div class="photo-row">
+                            ${photoPreview}
+                            <input type="file" id="photo-input" accept="image/*">
+                            ${removeButton}
+                        </div>
+                    </div>
+                </details>`;
+        }
+
+        function formSummarySection() {
+            return `
+                <details class="section" data-section="summary" open>
+                    <summary>Summary</summary>
+                    <label class="field">
+                        <span>Short introduction</span>
+                        <textarea rows="4" data-key="summary">${escapeHtml(data.summary)}</textarea>
+                    </label>
+                </details>`;
+        }
+
+        /** Work experience and internships share the same fields, so they use this function. */
+        function formExperienceSection(list, title, addLabel, isOpen) {
+            const items = data[list].map((entry, index) => `
+                <div class="item">
+                    ${itemTools(list, index)}
+                    <div class="row-two">
+                        ${listInput('Job title', list, index, 'role')}
+                        ${listInput('Dates', list, index, 'period')}
+                    </div>
+                    ${listInput('Company and location', list, index, 'company')}
+                    ${listTextarea('Responsibilities and achievements (one per line)', list, index, 'desc', 4)}
+                </div>`).join('');
+
+            return `
+                <details class="section" data-section="${list}" ${isOpen ? 'open' : ''}>
+                    <summary>${title}</summary>
+                    ${items}
+                    <button class="add-button" data-action="add" data-list="${list}">${addLabel}</button>
+                </details>`;
+        }
+
+        function formEducationSection() {
+            const items = data.edus.map((edu, index) => `
+                <div class="item">
+                    ${itemTools('edus', index)}
+                    ${listInput('Degree or qualification', 'edus', index, 'name')}
+                    <div class="row-two">
+                        ${listInput('School', 'edus', index, 'school')}
+                        ${listInput('Dates', 'edus', index, 'period')}
+                    </div>
+                </div>`).join('');
+
+            return `
+                <details class="section" data-section="education">
+                    <summary>Education</summary>
+                    ${items}
+                    <button class="add-button" data-action="add" data-list="edus">+ Add education</button>
+                </details>`;
+        }
+
+        function formSkillsSection() {
+            return `
+                <details class="section" data-section="skills">
+                    <summary>Skills and languages</summary>
+                    <label class="field">
+                        <span>Skills (separated by commas)</span>
+                        <textarea rows="3" data-key="skills">${escapeHtml(data.skills)}</textarea>
+                    </label>
+                    <label class="field">
+                        <span>Languages (one per line)</span>
+                        <textarea rows="3" data-key="langs">${escapeHtml(data.langs)}</textarea>
+                    </label>
+                </details>`;
+        }
+
+        /** Remember which sections are open so they stay open after rebuilding the form. */
+        function readOpenSections() {
+            const state = {};
+            dom.form.querySelectorAll('details.section').forEach((details) => {
+                state[details.dataset.section] = details.open;
+            });
+            return state;
+        }
+
+        function restoreOpenSections(state) {
+            dom.form.querySelectorAll('details.section').forEach((details) => {
+                if (details.dataset.section in state) details.open = state[details.dataset.section];
+            });
+        }
+
+        /** Rebuild the form while preserving open sections and scroll position. */
+        function renderForm() {
+            const openSections = readOpenSections();
+            const scrollTop = dom.editor.scrollTop;
+
+            dom.form.innerHTML = [
+                formLayoutSection(),
+                formPersonalSection(),
+                formSummarySection(),
+                formExperienceSection('jobs', 'Work experience', '+ Add job', true),
+                formExperienceSection('internships', 'Internships', '+ Add internship', data.internships.length > 0),
+                formEducationSection(),
+                formSkillsSection(),
+            ].join('');
+
+            restoreOpenSections(openSections);
+            dom.editor.scrollTop = scrollTop;
+        }
+
+
+        /* ---------- 6. Build resume ---------- */
+
+        function buildContactItems() {
+            return [
+                { label: 'E-mail', value: data.email },
+                { label: 'Phone', value: data.phone },
+                { label: 'City', value: data.city },
+                { label: 'Website', value: data.web },
+            ].filter((item) => item.value);
+        }
+
+        function buildSkillList() {
+            return data.skills.split(/[,\n]/).map((skill) => skill.trim()).filter(Boolean);
+        }
+
+        /** Build the job list, used for both work experience and internships. */
+        function buildJobsHtml(list) {
+            return list.map((job) => {
+                const lines = splitLines(job.desc);
+                const bullets = lines.length
+                    ? `<ul class="bullets">${lines.map((line) => `<li>${escapeHtml(line.replace(/^[-•*]\s*/, ''))}</li>`).join('')}</ul>`
+                    : '';
+
+                return `
+                    <div class="job">
+                        <div class="job-header">
+                            <h3 class="job-title">${escapeHtml(job.role)}</h3>
+                            <span class="period">${escapeHtml(job.period)}</span>
+                        </div>
+                        <div class="job-company">${escapeHtml(job.company)}</div>
+                        ${bullets}
+                    </div>`;
+            }).join('');
+        }
+
+        function buildEducationHtml() {
+            return data.edus.map((edu) => `
+                <div class="edu">
+                    <div class="job-header">
+                        <h3 class="job-title">${escapeHtml(edu.name)}</h3>
+                        <span class="period">${escapeHtml(edu.period)}</span>
+                    </div>
+                    <div class="job-company">${escapeHtml(edu.school)}</div>
+                </div>`).join('');
+        }
+
+        /** Return a headed section, or nothing if it has no content. */
+        function section(title, contentHtml, hasContent = true) {
+            return hasContent ? `<section><h2>${title}</h2>${contentHtml}</section>` : '';
+        }
+
+        /** Design with a colored sidebar. */
+        function buildSideDesign(parts) {
+            const { contact, skills, langs, photoHtml, nameHtml, summaryHtml } = parts;
+
+            const contactHtml = `<ul>${contact.map((item) =>
+                `<li><span class="label">${item.label}</span>${escapeHtml(item.value)}</li>`).join('')}</ul>`;
+            const skillsHtml = `<ul>${skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join('')}</ul>`;
+            const langsHtml = `<ul>${langs.map((lang) => `<li>${escapeHtml(lang)}</li>`).join('')}</ul>`;
+
+            return `
+                <aside>
+                    ${photoHtml}
+                    ${section('Contact', contactHtml, contact.length > 0)}
+                    ${section('Skills', skillsHtml, skills.length > 0)}
+                    ${section('Languages', langsHtml, langs.length > 0)}
+                </aside>
+                <main>
+                    <div class="head">${nameHtml}</div>
+                    ${section('Summary', summaryHtml, Boolean(summaryHtml))}
+                    ${section('Work experience', buildJobsHtml(data.jobs), data.jobs.length > 0)}
+                    ${section('Internships', buildJobsHtml(data.internships), data.internships.length > 0)}
+                    ${section('Education', buildEducationHtml(), data.edus.length > 0)}
+                </main>`;
+        }
+
+        /** Single-column design. */
+        function buildClassicDesign(parts) {
+            const { contact, skills, langs, photoHtml, nameHtml, summaryHtml } = parts;
+
+            const contactHtml = contact.map((item) => `<span>${escapeHtml(item.value)}</span>`).join('');
+            const skillsHtml = `<ul class="chips">${skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join('')}</ul>`;
+            const langsHtml = `<ul>${langs.map((lang) => `<li>${escapeHtml(lang)}</li>`).join('')}</ul>`;
+
+            return `
+                <div class="head">
+                    ${photoHtml}
+                    <div>
+                        ${nameHtml}
+                        <div class="contact">${contactHtml}</div>
+                    </div>
+                </div>
+                ${section('Summary', summaryHtml, Boolean(summaryHtml))}
+                ${section('Work experience', buildJobsHtml(data.jobs), data.jobs.length > 0)}
+                    ${section('Internships', buildJobsHtml(data.internships), data.internships.length > 0)}
+                ${section('Education', buildEducationHtml(), data.edus.length > 0)}
+                <div class="two-columns">
+                    ${section('Skills', skillsHtml, skills.length > 0)}
+                    ${section('Languages', langsHtml, langs.length > 0)}
+                </div>`;
+        }
+
+        /** Build the resume HTML using the selected design. */
+        function buildCv() {
+            const parts = {
+                contact: buildContactItems(),
+                skills: buildSkillList(),
+                langs: splitLines(data.langs),
+                photoHtml: data.photo ? `<img class="photo" src="${data.photo}" alt="">` : '',
+                nameHtml: `<h1 class="name">${escapeHtml(data.name)}</h1><p class="role">${escapeHtml(data.title)}</p>`,
+                summaryHtml: data.summary.trim() ? `<p>${escapeHtml(data.summary).replace(/\n/g, '<br>')}</p>` : '',
+            };
+
+            return data.template === 'classic' ? buildClassicDesign(parts) : buildSideDesign(parts);
+        }
+
+
+        /* ---------- 7. Show preview (right) ---------- */
+
+        let currentTextScale = 1;   // 1 = normal, 0.9 = 90%, and so on
+
+        function renderCv() {
+            const cv = dom.cv;
+
+            const classes = ['cv', `design-${data.template}`, `font-${data.font}`];
+            if (data.onePage) classes.push('one-page');
+            cv.className = classes.join(' ');
+
+            document.documentElement.style.setProperty('--accent', data.color);
+            cv.innerHTML = buildCv();
+
+            fitTextToOnePage();
+            updatePreviewScale();
+        }
+
+        /** For "Fit on one page", gradually scale down text until everything fits. */
+        function fitTextToOnePage() {
+            const cv = dom.cv;
+            let scale = 1;
+            cv.style.setProperty('--text-scale', scale);
+
+            if (data.onePage) {
+                // Measure the actual content height without the minimum A4 height.
+                cv.style.minHeight = '0';
+                cv.style.height = 'auto';
+
+                while (cv.offsetHeight > A4_HEIGHT_PX - 2 && scale > MIN_TEXT_SCALE) {
+                    scale = Math.round((scale - TEXT_SCALE_STEP) * 100) / 100;
+                    cv.style.setProperty('--text-scale', scale);
+                }
+
+                cv.style.minHeight = '';
+                cv.style.height = '';
+            }
+
+            currentTextScale = scale;
+        }
+
+        /** Scale the preview to fit the screen and show page boundaries. */
+        function updatePreviewScale() {
+            const cvWidth = dom.cv.offsetWidth || 794;
+            const cvHeight = dom.cv.offsetHeight;
+            const scale = Math.min(1, (dom.preview.clientWidth - 48) / cvWidth);
+
+            dom.scaler.style.transform = `scale(${scale})`;
+            dom.guides.style.transform = `scale(${scale})`;
+            dom.guides.style.height = `${cvHeight}px`;
+            dom.paper.style.width = `${cvWidth * scale}px`;
+            dom.paper.style.height = `${cvHeight * scale}px`;
+
+            updatePreviewInfo(cvHeight);
+        }
+
+        function updatePreviewInfo(cvHeight) {
+            const tooLong = data.onePage && cvHeight > A4_HEIGHT_PX + 1;
+            if (tooLong) {
+                dom.previewInfo.textContent =
+                    'This does not fit on one page, even after scaling down. Shorten some text or turn off "Fit on one page".';
+                return;
+            }
+
+            const pages = data.onePage ? 1 : countPages(cvHeight);
+            const pageWord = pages === 1 ? 'page' : 'pages';
+            const shrinkNote = currentTextScale < 1
+                ? `, text scaled to ${Math.round(currentTextScale * 100)}%`
+                : '';
+
+            dom.previewInfo.textContent =
+                `A4 preview, ${pages} ${pageWord}${shrinkNote}. Red lines mark page breaks.`;
+        }
+
+
+        /* ---------- 8. Photo ---------- */
+
+        /**
+         * Crop a photo to a square, slightly above center to keep faces in frame.
+         * The PDF library cannot neatly crop non-square photos, so crop them here.
+         * `done` receives the new photo and whether it changed.
+         */
+        function cropToSquare(source, done) {
+            const image = new Image();
+            image.onload = () => {
+                const side = Math.min(image.width, image.height);
+                const outputSize = Math.min(PHOTO_SIZE_PX, side);
+                const offsetX = (image.width - side) / 2;
+                const offsetY = (image.height - side) * 0.25;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = outputSize;
+                canvas.getContext('2d').drawImage(image, offsetX, offsetY, side, side, 0, 0, outputSize, outputSize);
+
+                const wasChanged = image.width !== image.height;
+                done(canvas.toDataURL('image/png'), wasChanged);
+            };
+            image.src = source;
+        }
+
+        /** Square an existing photo if it has not already been cropped. */
+        function squareExistingPhoto() {
+            if (!data.photo) return;
+            cropToSquare(data.photo, (photo, wasChanged) => {
+                if (wasChanged) {
+                    data.photo = photo;
+                    updateAll();
+                }
+            });
+        }
+
+        function handlePhotoUpload(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                cropToSquare(reader.result, (photo) => {
+                    data.photo = photo;
+                    updateAll();
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+
+        /* ---------- 9. Save data in and open PDFs ----------
+           The downloaded PDF contains your data as text so you can reopen it and continue later. */
+
+        function packData() {
+            return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+        }
+
+        function unpackData(text) {
+            return JSON.parse(decodeURIComponent(escape(atob(text))));
+        }
+
+        /** Replace the current data with imported data after validation. */
+        function applyImportedData(imported) {
+            const looksValid = imported && typeof imported === 'object'
+                && Array.isArray(imported.jobs) && Array.isArray(imported.edus);
+            if (!looksValid) throw new Error('Invalid resume data');
+
+            data = mergeWithSample(imported);
+            updateAll();
+            squareExistingPhoto();
+        }
+
+        /** Find the embedded resume data in a PDF file. */
+        async function readDataFromPdf(file) {
+            const bytes = new Uint8Array(await file.arrayBuffer());
+
+            // Convert bytes to text in chunks to avoid freezing the browser on large files.
+            let text = '';
+            const chunkSize = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                text += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+            }
+
+            const match = text.match(new RegExp(PDF_DATA_MARKER + '([A-Za-z0-9+/=]+)'));
+            if (!match) throw new Error('No resume data found in PDF');
+            return unpackData(match[1]);
+        }
+
+        async function openDataFile(file) {
+            try {
+                const imported = await readDataFromPdf(file);
+
+                const confirmed = confirm('Your current entries will be replaced with the data from this PDF. Continue?');
+                if (confirmed) applyImportedData(imported);
+            } catch (error) {
+                alert('This file does not contain resume data. You can only open a PDF created with the "Download PDF" button.');
+            }
+        }
+
+        /* ---------- 10. Download PDF ---------- */
+
+        function addFullResolutionPhoto(pdf, clone) {
+            const photo = clone.querySelector('.photo');
+            if (!photo || !data.photo) return;
+
+            const cloneRect = clone.getBoundingClientRect();
+            const photoRect = photo.getBoundingClientRect();
+            const style = getComputedStyle(photo);
+            const borderLeft = parseFloat(style.borderLeftWidth) || 0;
+            const borderRight = parseFloat(style.borderRightWidth) || 0;
+            const borderTop = parseFloat(style.borderTopWidth) || 0;
+            const borderBottom = parseFloat(style.borderBottomWidth) || 0;
+            const scale = pdf.internal.pageSize.getWidth() / cloneRect.width;
+            const x = (photoRect.left - cloneRect.left + borderLeft) * scale;
+            const y = (photoRect.top - cloneRect.top + borderTop) * scale;
+            const width = (photoRect.width - borderLeft - borderRight) * scale;
+            const height = (photoRect.height - borderTop - borderBottom) * scale;
+
+            const points = pdf.internal.scaleFactor;
+            const pageHeight = pdf.internal.pageSize.getHeight() * points;
+            const centerX = (x + width / 2) * points;
+            const centerY = pageHeight - (y + height / 2) * points;
+            const radius = Math.min(width, height) * points / 2;
+            const control = radius * 0.5522847498;
+            const pdfY = (value) => pageHeight - value * points;
+
+            pdf.setPage(1);
+            pdf.saveGraphicsState();
+            pdf.internal.write(
+                `${centerX} ${pdfY(y)} m `
+                + `${centerX + control} ${pdfY(y)} ${centerX + radius} ${centerY + control} ${centerX + radius} ${centerY} c `
+                + `${centerX + radius} ${centerY - control} ${centerX + control} ${pdfY(y + height)} ${centerX} ${pdfY(y + height)} c `
+                + `${centerX - control} ${pdfY(y + height)} ${centerX - radius} ${centerY - control} ${centerX - radius} ${centerY} c `
+                + `${centerX - radius} ${centerY + control} ${centerX - control} ${pdfY(y)} ${centerX} ${pdfY(y)} c h W n`
+            );
+            pdf.addImage(data.photo, x, y, width, height);
+            pdf.restoreGraphicsState();
+        }
+
+        async function downloadPdf() {
+            const button = $('#btn-download');
+
+            // If the PDF library cannot load, use the print dialog instead.
+            if (typeof html2pdf === 'undefined') {
+                alert('The PDF library could not load. '
+                    + 'The print dialog will open; choose "Save as PDF".');
+                window.print();
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Creating PDF…';
+
+            // Create a full-size copy of the resume off screen so preview scaling does not affect the PDF.
+            const pages = data.onePage ? 1 : countPages(dom.cv.offsetHeight);
+            const clone = dom.cv.cloneNode(true);
+            if (data.onePage) {
+                clone.style.cssText += `;height:${PDF_ONE_PAGE_HEIGHT_PX}px;min-height:0;overflow:hidden`;
+            } else {
+                clone.style.minHeight = `${pages * 297}mm`;
+            }
+
+            const offscreen = document.createElement('div');
+            offscreen.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm';
+            offscreen.appendChild(clone);
+            document.body.appendChild(offscreen);
+
+            try {
+                await document.fonts.ready;
+
+                // Remove characters that are not allowed in file names.
+                const safeName = (data.name || 'untitled').replace(/[\\/:*?"<>|]/g, '');
+
+                const options = {
+                    margin: 0,
+                    filename: `Resume - ${safeName}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 4, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: data.onePage
+                        ? { mode: [] }
+                        : { mode: ['css', 'legacy'], avoid: ['.job', '.edu'] },
+                };
+
+                await html2pdf()
+                    .set(options)
+                    .from(clone)
+                    .toPdf()
+                    .get('pdf')
+                    .then((pdf) => {
+                        // Ensure that "fit on one page" produces exactly one page.
+                        if (data.onePage) {
+                            while (pdf.internal.getNumberOfPages() > 1) {
+                                pdf.deletePage(pdf.internal.getNumberOfPages());
+                            }
+                        }
+                        addFullResolutionPhoto(pdf, clone);
+                        // Embed the data in the PDF so it can be reopened later.
+                        pdf.setProperties({
+                            title: `Resume - ${data.name || ''}`,
+                            subject: 'Created with Resume Builder',
+                            keywords: PDF_DATA_MARKER + packData(),
+                        });
+                    })
+                    .save();
+            } catch (error) {
+                console.error(error);
+                alert('Failed to create the PDF. Try the "Print / selectable PDF" button.');
+            }
+
+            offscreen.remove();
+            button.disabled = false;
+            button.textContent = 'Download PDF';
+        }
+
+
+        /* ---------- 11. Connect buttons and inputs ---------- */
+
+        /** Text entered in the form, including select fields. */
+        function handleInput(event) {
+            const target = event.target;
+
+            if (target.dataset.list) {
+                // A job or education field
+                data[target.dataset.list][Number(target.dataset.index)][target.dataset.field] = target.value;
+            } else if (target.dataset.key) {
+                // A regular field
+                data[target.dataset.key] = target.value;
+            } else {
+                return;
+            }
+            update();
+        }
+
+        /** Checkbox, custom color, and photo upload. */
+        function handleChange(event) {
+            const target = event.target;
+
+            if (target.id === 'option-one-page') {
+                data.onePage = target.checked;
+                update();
+            } else if (target.id === 'option-custom-color') {
+                data.color = target.value;
+                updateAll();
+            } else if (target.id === 'photo-input' && target.files[0]) {
+                handlePhotoUpload(target.files[0]);
+            }
+        }
+
+        /** All buttons in the form. */
+        function handleClick(event) {
+            const button = event.target.closest('button');
+            if (!button) return;
+
+            if (button.dataset.color) {
+                data.color = button.dataset.color;
+                updateAll();
+                return;
+            }
+
+            if (button.id === 'btn-remove-photo') {
+                data.photo = '';
+                updateAll();
+                return;
+            }
+
+            // Add, remove, or move jobs and education items.
+            const action = button.dataset.action;
+            if (!action) return;
+
+            const items = data[button.dataset.list];
+            const index = Number(button.dataset.index);
+
+            if (action === 'add') {
+                items.push({ ...NEW_ITEM[button.dataset.list] });
+            } else if (action === 'delete') {
+                items.splice(index, 1);
+            } else if (action === 'up' && index > 0) {
+                [items[index - 1], items[index]] = [items[index], items[index - 1]];
+            } else if (action === 'down' && index < items.length - 1) {
+                [items[index + 1], items[index]] = [items[index], items[index + 1]];
+            }
+            updateAll();
+        }
+
+        function setupEvents() {
+            dom.editor.addEventListener('input', handleInput);
+            dom.editor.addEventListener('change', handleChange);
+            dom.editor.addEventListener('click', handleClick);
+
+            $('#btn-download').addEventListener('click', downloadPdf);
+            $('#btn-print').addEventListener('click', () => window.print());
+            $('#btn-open').addEventListener('click', () => $('#file-open').click());
+            $('#file-open').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                event.target.value = '';      // Allow the same file to be selected again.
+                if (file) openDataFile(file);
+            });
+
+            $('#btn-reset').addEventListener('click', () => {
+                if (confirm('Replace all entries with the sample data?')) {
+                    data = structuredClone(SAMPLE_DATA);
+                    updateAll();
+                }
+            });
+
+            window.addEventListener('resize', updatePreviewScale);
+            if (document.fonts) document.fonts.ready.then(() => renderCv());
+        }
+
+
+        /* ---------- 12. Start ---------- */
+        setupEvents();
+        renderForm();
+        renderCv();
+        squareExistingPhoto();
+    </script>
+</body>
+
+</html>
