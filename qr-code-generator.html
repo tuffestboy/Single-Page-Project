@@ -149,7 +149,7 @@
 
         .workspace {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(280px, 350px);
+            grid-template-columns: minmax(0, 1fr) minmax(350px, 560px);
             gap: 20px;
             align-items: start;
         }
@@ -413,7 +413,12 @@
         .preview {
             position: sticky;
             top: 20px;
+            width: 350px;
+            min-width: 350px;
+            max-width: 560px;
             padding: 24px;
+            overflow: hidden;
+            resize: horizontal;
             text-align: center;
         }
 
@@ -432,26 +437,23 @@
 
         .qr-frame {
             display: grid;
-            width: min(100%, 320px);
-            height: 320px;
-            min-width: 220px;
-            min-height: 220px;
-            max-width: min(80vw, 560px);
-            max-height: 80vh;
+            width: 100%;
+            aspect-ratio: 1;
             place-items: center;
             grid-template-columns: minmax(0, 1fr);
             padding: 20px;
-            overflow: auto;
+            overflow: hidden;
             background: #f5f6f1;
             border: 1px dashed #d9e1d8;
             border-radius: 15px;
-            resize: both;
         }
 
         #qr-code {
             display: grid;
             width: 100%;
+            min-width: 0;
             max-width: 100%;
+            aspect-ratio: 1;
             place-items: center;
             padding: 10px;
             background: var(--white);
@@ -522,13 +524,16 @@
             margin: 0;
         }
 
-        @media (max-width: 760px) {
+        @media (max-width: 1000px) {
             .workspace {
                 grid-template-columns: 1fr;
             }
 
             .preview {
                 position: static;
+                min-width: 0;
+                max-width: 100%;
+                resize: none;
             }
         }
 
@@ -845,7 +850,7 @@
 
             <aside class="panel preview" aria-labelledby="preview-title">
                 <h2 id="preview-title">Live preview</h2>
-                <p>Scan it with your phone to test it. Drag the lower-right corner to resize the preview.</p>
+                <p>Scan it with your phone to test it. Drag the lower-right corner to resize the whole preview panel.</p>
                 <div class="qr-frame">
                     <div id="qr-code" aria-label="Generated QR code"></div>
                     <div class="empty-state" id="empty-state">Enter some text or a link to create your QR code.</div>
@@ -880,9 +885,15 @@
         const wifiPasswordField = document.querySelector('#wifi-password-field');
         let currentQrModel = null;
 
-        function updateQrFrameBounds() {
-            const availableWidth = window.innerWidth - qrFrame.getBoundingClientRect().left - 24;
-            qrFrame.style.maxWidth = `${Math.max(220, Math.min(560, availableWidth))}px`;
+        function updateQrPreviewBounds() {
+            const preview = qrFrame.closest('.preview');
+            const availableWidth = preview.parentElement.clientWidth;
+            const isNarrowLayout = window.matchMedia('(max-width: 1000px)').matches;
+            const minimumWidth = isNarrowLayout ? 0 : 350;
+            if (isNarrowLayout) {
+                preview.style.removeProperty('width');
+            }
+            preview.style.maxWidth = `${Math.max(minimumWidth, Math.min(560, availableWidth))}px`;
         }
 
         function getFieldValue(id) {
@@ -1247,7 +1258,7 @@
 
         settingsForm.addEventListener('input', updateQrCode);
         settingsForm.addEventListener('change', updateQrCode);
-        window.addEventListener('resize', updateQrFrameBounds);
+        window.addEventListener('resize', updateQrPreviewBounds);
         downloadButton.addEventListener('click', downloadQrCode);
         document.querySelector('#clear-button').addEventListener('click', () => {
             const activeFields = document.querySelector(`[data-mode-fields="${typeInput.value}"]`);
@@ -1262,7 +1273,7 @@
             updateQrCode();
         });
 
-        updateQrFrameBounds();
+        updateQrPreviewBounds();
         updateQrCode();
     </script>
 </body>

@@ -34,4 +34,4 @@ The Resume Builder provides a live A4 preview with zoom controls and click-and-d
 - CSS
 - JavaScript
 
-The QR Code Generator supports plain text and links, Wi-Fi network details, vCard contacts, email, phone calls, SMS, map locations, and calendar events. Customize square, rounded, or circular modules, resize the on-screen preview using its lower-right corner, and export as PNG, JPEG, SVG, or WebP. It uses QRCode.js from cdnjs, so an internet connection is required to generate codes. Scanner behavior depends on the phone and QR reader.
+The QR Code Generator supports plain text and links, Wi-Fi network details, vCard contacts, email, phone calls, SMS, map locations, and calendar events. Customize square, rounded, or circular modules, resize the whole on-screen preview panel from its lower-right corner (from a 350 px minimum up to 560 px) while keeping the QR image square, and export as PNG, JPEG, SVG, or WebP. The preview adapts to narrow screens. It uses QRCode.js from cdnjs, so an internet connection is required to generate codes. Scanner behavior depends on the phone and QR reader.
