@@ -55,7 +55,7 @@
             color: inherit;
         }
 
-        .site-header,
+        .header-inner,
         main,
         .site-footer {
             width: min(1050px, calc(100% - 48px));
@@ -63,11 +63,16 @@
         }
 
         .site-header {
+            width: 100%;
+            border-bottom: 1px solid var(--line);
+            background: var(--paper);
+        }
+
+        .header-inner {
             display: flex;
             min-height: 82px;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--line);
         }
 
         .brand {
@@ -210,7 +215,35 @@
 
         .field select {
             min-height: 44px;
-            padding: 0 12px;
+            padding: 0 42px 0 12px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23245c45' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 14px;
+            transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+        }
+
+        .field select:hover {
+            background-color: #fbfcfa;
+            border-color: #b8c7bd;
+        }
+
+        .field select:focus-visible {
+            outline: 3px solid rgba(36, 92, 69, 0.16);
+            outline-offset: 2px;
+            border-color: var(--green);
+            box-shadow: 0 0 0 1px var(--green);
+        }
+
+        .field select option {
+            color: var(--ink);
+            background: #fff;
+        }
+
+        .field select option:checked {
+            color: #fff;
+            background: var(--green);
         }
 
         .field input:not([type="checkbox"]):not([type="color"]) {
@@ -491,13 +524,13 @@
         }
 
         @media (max-width: 540px) {
-            .site-header,
+            .header-inner,
             main,
             .site-footer {
                 width: calc(100% - 36px);
             }
 
-            .site-header {
+            .header-inner {
                 min-height: 70px;
             }
 
@@ -557,11 +590,13 @@
 
 <body>
     <header class="site-header">
-        <a class="brand" href="./index.html" aria-label="Single Page Project home">
-            <span class="brand-mark" aria-hidden="true">sp</span>
-            <span>Single Page Project</span>
-        </a>
-        <a class="back-link" href="./index.html">← All tools</a>
+        <div class="header-inner">
+            <a class="brand" href="./index.html" aria-label="Single Page Project home">
+                <span class="brand-mark" aria-hidden="true">sp</span>
+                <span>Single Page Project</span>
+            </a>
+            <a class="back-link" href="./index.html">← All tools</a>
+        </div>
     </header>
 
     <main>

@@ -48,7 +48,7 @@
             color: inherit;
         }
 
-        .site-header,
+        .header-inner,
         main,
         .site-footer {
             width: min(1120px, calc(100% - 48px));
@@ -56,11 +56,16 @@
         }
 
         .site-header {
+            width: 100%;
+            border-bottom: 1px solid var(--line);
+            background: var(--paper);
+        }
+
+        .header-inner {
             display: flex;
             min-height: 82px;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--line);
         }
 
         .brand {
@@ -327,13 +332,13 @@
         }
 
         @media (max-width: 640px) {
-            .site-header,
+            .header-inner,
             main,
             .site-footer {
                 width: min(100% - 36px, 520px);
             }
 
-            .site-header {
+            .header-inner {
                 min-height: 70px;
             }
 
@@ -411,11 +416,13 @@
 
 <body>
     <header class="site-header">
-        <a class="brand" href="./" aria-label="Single Page Project home">
-            <span class="brand-mark" aria-hidden="true">sp</span>
-            <span>Single Page Project</span>
-        </a>
-        <span class="header-note">Small tools. No fuss.</span>
+        <div class="header-inner">
+            <a class="brand" href="./" aria-label="Single Page Project home">
+                <span class="brand-mark" aria-hidden="true">sp</span>
+                <span>Single Page Project</span>
+            </a>
+            <span class="header-note">Small tools. No fuss.</span>
+        </div>
     </header>
 
     <main>
