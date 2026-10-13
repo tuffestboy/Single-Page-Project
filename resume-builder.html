@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Build, preview, and download a polished resume in your browser.">
+    <meta name="theme-color" content="#f7f6f2">
     <title>Resume Builder | Single Page Project</title>
 
     <!-- Fonts (Google Fonts) -->
@@ -33,20 +35,20 @@
 
         /* ---------- 1. Variables ---------- */
         :root {
-            --accent: #1f3a5f;
+            --accent: #245c45;
             /* Resume color, updated by the color picker */
 
-            --ui-bg: #e8ebf0;
+            --ui-bg: #f7f6f2;
             /* App background */
             --ui-panel: #ffffff;
             /* Form background */
-            --ui-ink: #1c2330;
+            --ui-ink: #192821;
             /* Text color */
-            --ui-mute: #667085;
+            --ui-mute: #68736c;
             /* Muted text */
-            --ui-line: #d8dde5;
+            --ui-line: #e3e5dd;
             /* Borders */
-            --ui-button: #1f3a5f;
+            --ui-button: #245c45;
             /* Primary button */
         }
 
@@ -68,7 +70,52 @@
             font-family: 'DM Sans', system-ui, sans-serif;
             font-size: 14px;
             color: var(--ui-ink);
-            background: var(--ui-bg);
+            background:
+                radial-gradient(ellipse at 88% 2%, rgba(240, 165, 107, 0.13), transparent 31rem),
+                var(--ui-bg);
+        }
+
+        .site-header {
+            display: flex;
+            width: min(1050px, calc(100% - 48px));
+            min-height: 82px;
+            align-items: center;
+            justify-content: space-between;
+            margin-inline: auto;
+            border-bottom: 1px solid var(--ui-line);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 11px;
+            color: var(--ui-ink);
+            font-size: 15px;
+            font-weight: 750;
+            letter-spacing: -0.035em;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            place-items: center;
+            color: #fff;
+            background: #245c45;
+            border-radius: 11px;
+            font-size: 15px;
+            letter-spacing: -0.08em;
+        }
+
+        .back-link {
+            color: var(--ui-mute);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #245c45;
         }
 
         button {
@@ -80,7 +127,7 @@
         input:focus-visible,
         textarea:focus-visible,
         select:focus-visible {
-            outline: 2px solid #3b82f6;
+            outline: 2px solid #f0a56b;
             outline-offset: 2px;
         }
 
@@ -90,7 +137,7 @@
             display: grid;
             grid-template-columns: minmax(320px, 420px) 1fr;
             /* Form | preview */
-            height: 100%;
+            height: calc(100% - 82px);
         }
 
 
@@ -649,6 +696,11 @@
                 height: auto;
             }
 
+            .site-header {
+                width: calc(100% - 36px);
+                min-height: 70px;
+            }
+
             .app {
                 grid-template-columns: 1fr;
                 height: auto;
@@ -675,6 +727,7 @@
                 background: #fff;
             }
 
+            .site-header,
             .editor,
             .preview-info,
             .page-guides {
@@ -719,6 +772,14 @@
 
 
 <body>
+    <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="Single Page Project home">
+        <span class="brand-mark" aria-hidden="true">sp</span>
+        <span>Single Page Project</span>
+    </a>
+    <a class="back-link" href="./index.html">← All tools</a>
+    </header>
+
     <div class="app">
 
         <!-- Form on the left -->
@@ -786,7 +847,7 @@
         const PDF_DATA_MARKER = 'CVDATA1:';
 
         // Colors in the color picker (dark enough for white text in the sidebar)
-        const ACCENT_COLORS = ['#1f3a5f', '#0f5c5c', '#7a2e3b', '#3d5a40', '#5b3f8c', '#2b2b2b'];
+        const ACCENT_COLORS = ['#245c45', '#0f5c5c', '#7a2e3b', '#3d5a40', '#5b3f8c', '#2b2b2b'];
 
         const A4_HEIGHT_PX = 297 / 25.4 * 96;   // A4 height in pixels
         const MIN_TEXT_SCALE = 0.7;             // text is never scaled below 70%
@@ -849,7 +910,7 @@
             // Layout
             template: 'side',       // 'side' (sidebar) or 'classic'
             font: 'sans',           // 'sans' or 'serif'
-            color: '#1f3a5f',
+            color: '#245c45',
             onePage: true,
         };
 

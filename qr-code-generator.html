@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Create a custom QR code from a link or text and download it as a PNG.">
+    <meta name="theme-color" content="#f5f6f1">
+    <title>QR Code Generator | Single Page Project</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            color-scheme: light;
+            --paper: #f7f6f2;
+            --white: #fff;
+            --ink: #192821;
+            --muted: #68736c;
+            --line: #e3e5dd;
+            --green: #245c45;
+            --green-dark: #194532;
+            --soft-green: #e8efe8;
+            --shadow: 0 20px 60px rgba(30, 49, 38, 0.08);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--ink);
+            background:
+                radial-gradient(ellipse at 88% 2%, rgba(240, 165, 107, 0.13), transparent 31rem),
+                var(--paper);
+            font-family: "Segoe UI", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button,
+        textarea,
+        select {
+            font: inherit;
+        }
+
+        button,
+        select,
+        input[type="color"] {
+            cursor: pointer;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .site-header,
+        main,
+        .site-footer {
+            width: min(1050px, calc(100% - 48px));
+            margin-inline: auto;
+        }
+
+        .site-header {
+            display: flex;
+            min-height: 82px;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 11px;
+            font-size: 15px;
+            font-weight: 750;
+            letter-spacing: -0.035em;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            place-items: center;
+            color: var(--white);
+            background: var(--green);
+            border-radius: 11px;
+            font-size: 15px;
+            letter-spacing: -0.08em;
+        }
+
+        .back-link {
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: var(--green);
+        }
+
+        main {
+            padding-block: 58px 80px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            margin: 0 0 17px;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 750;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before {
+            width: 8px;
+            height: 8px;
+            background: #f0a56b;
+            border-radius: 50%;
+            content: "";
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(38px, 6vw, 62px);
+            font-weight: 680;
+            letter-spacing: -0.075em;
+            line-height: 1.03;
+        }
+
+        .intro {
+            max-width: 590px;
+            margin: 17px 0 34px;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.75;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 350px);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .settings {
+            padding: 29px;
+        }
+
+        .panel-heading {
+            margin: 0 0 7px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.045em;
+        }
+
+        .panel-copy {
+            margin: 0 0 24px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+            margin-top: 21px;
+        }
+
+        .field[hidden],
+        .mode-fields[hidden] {
+            display: none !important;
+        }
+
+        .field label,
+        .field-label {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .field textarea,
+        .field input:not([type="checkbox"]):not([type="color"]),
+        .field select {
+            width: 100%;
+            color: var(--ink);
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        .field textarea {
+            min-height: 142px;
+            padding: 13px 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .field select {
+            min-height: 44px;
+            padding: 0 12px;
+        }
+
+        .field input:not([type="checkbox"]):not([type="color"]) {
+            min-height: 44px;
+            padding: 0 12px;
+        }
+
+        .field input[type="datetime-local"] {
+            font-size: 13px;
+        }
+
+        .field input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            accent-color: var(--green);
+        }
+
+        .mode-fields {
+            padding: 0;
+            margin: 0;
+            border: 0;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 14px;
+        }
+
+        .checkbox-field {
+            display: flex;
+            min-height: 44px;
+            align-items: center;
+            gap: 9px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .security-note {
+            padding: 11px 12px;
+            margin: 10px 0 0;
+            color: #7b4b19;
+            background: #fff5e8;
+            border-radius: 9px;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .field textarea:focus-visible,
+        .field select:focus-visible,
+        input[type="color"]:focus-visible,
+        button:focus-visible,
+        a:focus-visible {
+            outline: 3px solid #f0a56b;
+            outline-offset: 3px;
+        }
+
+        .field textarea::placeholder {
+            color: #9aa49b;
+        }
+
+        .hint {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .mode-note {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 14px;
+            margin-top: 21px;
+        }
+
+        .options .field {
+            margin-top: 0;
+        }
+
+        .colors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .color-control {
+            display: flex;
+            min-width: 0;
+            min-height: 44px;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 9px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .color-control input {
+            width: 25px;
+            height: 25px;
+            flex: 0 0 auto;
+            padding: 0;
+            background: none;
+            border: 0;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 26px;
+        }
+
+        .button {
+            display: inline-flex;
+            min-height: 45px;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 17px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+        }
+
+        .button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .button-primary {
+            color: var(--white);
+            background: var(--green);
+        }
+
+        .button-primary:hover:not(:disabled) {
+            background: var(--green-dark);
+        }
+
+        .button-secondary {
+            color: var(--ink);
+            background: var(--white);
+            border-color: var(--line);
+        }
+
+        .button-secondary:hover:not(:disabled) {
+            border-color: #b7c4b8;
+        }
+
+        .button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .preview {
+            position: sticky;
+            top: 20px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .preview h2 {
+            margin: 0;
+            font-size: 17px;
+            letter-spacing: -0.035em;
+        }
+
+        .preview p {
+            margin: 7px 0 19px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .qr-frame {
+            display: grid;
+            min-height: 280px;
+            place-items: center;
+            padding: 20px;
+            overflow: hidden;
+            background: #f5f6f1;
+            border: 1px dashed #d9e1d8;
+            border-radius: 15px;
+        }
+
+        #qr-code {
+            display: grid;
+            max-width: 100%;
+            place-items: center;
+            padding: 10px;
+            background: var(--white);
+            border-radius: 8px;
+        }
+
+        #qr-code canvas,
+        #qr-code img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .empty-state {
+            max-width: 200px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .status {
+            min-height: 20px;
+            margin: 13px 0 0 !important;
+            color: var(--muted);
+            font-size: 12px !important;
+            overflow-wrap: anywhere;
+        }
+
+        .status.error {
+            color: #a1372c;
+        }
+
+        .status.warning {
+            color: #7b4b19;
+        }
+
+        .privacy-note {
+            display: flex;
+            gap: 11px;
+            margin-top: 21px;
+            padding: 14px;
+            background: var(--soft-green);
+            border-radius: 12px;
+            color: var(--green-dark);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .privacy-note strong {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 12px;
+        }
+
+        .site-footer {
+            display: flex;
+            min-height: 74px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            color: var(--muted);
+            border-top: 1px solid var(--line);
+            font-size: 12px;
+        }
+
+        .site-footer p {
+            margin: 0;
+        }
+
+        @media (max-width: 760px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .preview {
+                position: static;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .site-header,
+            main,
+            .site-footer {
+                width: calc(100% - 36px);
+            }
+
+            .site-header {
+                min-height: 70px;
+            }
+
+            main {
+                padding-block: 43px 58px;
+            }
+
+            .intro {
+                margin-bottom: 26px;
+            }
+
+            .settings {
+                padding: 22px 18px;
+            }
+
+            .options {
+                grid-template-columns: 1fr;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .colors {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .button {
+                padding-inline: 10px;
+            }
+
+            .site-footer {
+                min-height: 68px;
+                align-items: flex-start;
+                justify-content: center;
+                flex-direction: column;
+                gap: 5px;
+                padding-block: 14px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <a class="brand" href="./index.html" aria-label="Single Page Project home">
+            <span class="brand-mark" aria-hidden="true">sp</span>
+            <span>Single Page Project</span>
+        </a>
+        <a class="back-link" href="./index.html">← All tools</a>
+    </header>
+
+    <main>
+        <p class="eyebrow">Sharing · QR</p>
+        <h1>QR Code Generator</h1>
+        <p class="intro">
+        Create QR codes for links, Wi-Fi access, contacts, email, calls, texts,
+        locations, and calendar events. Customize the colors and download a PNG.
+        Your phone may ask before opening or saving scanned information.
+        </p>
+
+        <div class="workspace">
+        <section class="panel settings" id="settings-form" aria-labelledby="settings-title">
+                <h2 class="panel-heading" id="settings-title">Your QR code</h2>
+            <p class="panel-copy">Choose what your phone should recognize. The preview updates as you edit.</p>
+
+                <div class="field">
+                <label for="qr-type">Content type</label>
+                <select id="qr-type">
+                    <option value="text">Link or plain text</option>
+                    <option value="wifi">Wi-Fi network</option>
+                    <option value="contact">Contact card (vCard)</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone call</option>
+                    <option value="sms">Text message (SMS)</option>
+                    <option value="location">Map location</option>
+                    <option value="event">Calendar event</option>
+                </select>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="text">
+                <div class="field">
+                    <label for="qr-content">Link or text</label>
+                    <textarea id="qr-content" maxlength="2500"
+                        placeholder="https://example.com or write a short message"
+                        spellcheck="false">https://github.com/tuffestboy/Single-Page-Project</textarea>
+                    <p class="mode-note">Anyone who scans this code can read its content.</p>
+                </div>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="wifi" hidden>
+                <div class="field">
+                    <label for="wifi-name">Network name (SSID)</label>
+                    <input id="wifi-name" type="text" autocomplete="off" placeholder="e.g. Home Wi-Fi">
+                </div>
+                <div class="options">
+                    <div class="field">
+                        <label for="wifi-security">Security</label>
+                        <select id="wifi-security">
+                            <option value="WPA">WPA / WPA2 / WPA3</option>
+                            <option value="WEP">WEP</option>
+                            <option value="nopass">No password</option>
+                        </select>
+                    </div>
+                    <div class="field" id="wifi-password-field">
+                        <label for="wifi-password">Password</label>
+                        <input id="wifi-password" type="text" autocomplete="off" placeholder="Network password">
+                    </div>
+                </div>
+                <label class="checkbox-field">
+                    <input id="wifi-hidden" type="checkbox">
+                    <span>This is a hidden network</span>
+                </label>
+                <p class="security-note">
+                    This QR code contains your Wi-Fi password. Only share it with people you trust.
+                </p>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="contact" hidden>
+                <div class="field">
+                    <label for="contact-name">Full name</label>
+                    <input id="contact-name" type="text" autocomplete="name" placeholder="Alex Morgan">
+                </div>
+                <div class="input-grid">
+                    <div class="field">
+                        <label for="contact-phone">Phone</label>
+                        <input id="contact-phone" type="tel" autocomplete="tel" placeholder="+1 555 010 2040">
+                    </div>
+                    <div class="field">
+                        <label for="contact-email">Email</label>
+                        <input id="contact-email" type="email" autocomplete="email" placeholder="alex@example.com">
+                    </div>
+                </div>
+                <div class="input-grid">
+                    <div class="field">
+                        <label for="contact-company">Organization (optional)</label>
+                        <input id="contact-company" type="text" autocomplete="organization">
+                    </div>
+                    <div class="field">
+                        <label for="contact-website">Website (optional)</label>
+                        <input id="contact-website" type="url" placeholder="https://example.com">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="email" hidden>
+                <div class="field">
+                    <label for="email-address">Email address</label>
+                    <input id="email-address" type="email" autocomplete="email" placeholder="hello@example.com">
+                </div>
+                <div class="field">
+                    <label for="email-subject">Subject (optional)</label>
+                    <input id="email-subject" type="text" placeholder="Hello">
+                </div>
+                <div class="field">
+                    <label for="email-body">Message (optional)</label>
+                    <textarea id="email-body" placeholder="Write a message"></textarea>
+                </div>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="phone" hidden>
+                <div class="field">
+                    <label for="phone-number">Phone number</label>
+                    <input id="phone-number" type="tel" autocomplete="tel" placeholder="+1 555 010 2040">
+                </div>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="sms" hidden>
+                <div class="field">
+                    <label for="sms-number">Phone number</label>
+                    <input id="sms-number" type="tel" autocomplete="tel" placeholder="+1 555 010 2040">
+                </div>
+                <div class="field">
+                    <label for="sms-message">Message (optional)</label>
+                    <textarea id="sms-message" placeholder="Write a text message"></textarea>
+                </div>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="location" hidden>
+                <div class="input-grid">
+                    <div class="field">
+                        <label for="location-latitude">Latitude</label>
+                        <input id="location-latitude" type="number" min="-90" max="90" step="any" placeholder="37.421998">
+                    </div>
+                    <div class="field">
+                        <label for="location-longitude">Longitude</label>
+                        <input id="location-longitude" type="number" min="-180" max="180" step="any" placeholder="-122.084">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="location-label">Place name (optional)</label>
+                    <input id="location-label" type="text" placeholder="Meeting point">
+                </div>
+            </div>
+
+            <div class="mode-fields" data-mode-fields="event" hidden>
+                <div class="field">
+                    <label for="event-title">Event title</label>
+                    <input id="event-title" type="text" placeholder="Team meeting">
+                </div>
+                <div class="input-grid">
+                    <div class="field">
+                        <label for="event-start">Starts</label>
+                        <input id="event-start" type="datetime-local">
+                    </div>
+                    <div class="field">
+                        <label for="event-end">Ends</label>
+                        <input id="event-end" type="datetime-local">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="event-location">Location (optional)</label>
+                    <input id="event-location" type="text" placeholder="Office or meeting link">
+                </div>
+                <div class="field">
+                    <label for="event-description">Details (optional)</label>
+                    <textarea id="event-description" placeholder="Add a note"></textarea>
+                </div>
+            </div>
+
+            <div class="hint" aria-live="polite">
+                <span>QR data size</span>
+                <span id="character-count">0 / 1000 bytes</span>
+            </div>
+
+            <div class="options">
+                    <div class="field">
+                        <label for="qr-size">Image size</label>
+                        <select id="qr-size">
+                            <option value="180">Small · 180 px</option>
+                            <option value="260" selected>Medium · 260 px</option>
+                            <option value="360">Large · 360 px</option>
+                            <option value="480">Extra large · 480 px</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="qr-format">File type</label>
+                        <select id="qr-format">
+                            <option value="png">PNG</option>
+                            <option value="jpeg">JPEG</option>
+                            <option value="svg">SVG (vector)</option>
+                            <option value="webp">WebP</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="options">
+                    <div class="field">
+                        <label for="qr-style">Module style</label>
+                        <select id="qr-style">
+                            <option value="square">Square</option>
+                            <option value="rounded">Rounded</option>
+                            <option value="dots">Circles</option>
+                        </select>
+                        <p class="mode-note">Finder patterns stay square to help phones scan reliably.</p>
+                    </div>
+                    <div class="field">
+                        <span class="field-label">Colors</span>
+                        <div class="colors">
+                            <label class="color-control" for="qr-dark">
+                                <input type="color" id="qr-dark" value="#192821">
+                                <span>Code</span>
+                            </label>
+                            <label class="color-control" for="qr-light">
+                                <input type="color" id="qr-light" value="#ffffff">
+                                <span>Background</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="button button-primary" id="download-button" type="button" disabled>
+                        Download PNG
+                    </button>
+                    <button class="button button-secondary" id="clear-button" type="button">Clear fields</button>
+                </div>
+
+                <div class="privacy-note">
+                    <span aria-hidden="true">◆</span>
+                    <div>
+                        <strong>Made in your browser</strong>
+                        QR content is generated in your browser and is not sent to a QR-generation service.
+                    </div>
+                </div>
+            </section>
+
+            <aside class="panel preview" aria-labelledby="preview-title">
+                <h2 id="preview-title">Live preview</h2>
+                <p>Scan it with your phone to test it.</p>
+                <div class="qr-frame">
+                    <div id="qr-code" aria-label="Generated QR code"></div>
+                    <div class="empty-state" id="empty-state">Enter some text or a link to create your QR code.</div>
+                </div>
+                <p class="status" id="status" role="status" aria-live="polite"></p>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>Part of the Single Page Project collection.</p>
+        <p>QR codes can be scanned by most phone cameras.</p>
+    </footer>
+
+    <script>
+        const MAX_QR_BYTES = 1000;
+        const settingsForm = document.querySelector('#settings-form');
+        const typeInput = document.querySelector('#qr-type');
+        const contentInput = document.querySelector('#qr-content');
+        const sizeInput = document.querySelector('#qr-size');
+        const formatInput = document.querySelector('#qr-format');
+        const styleInput = document.querySelector('#qr-style');
+        const darkInput = document.querySelector('#qr-dark');
+        const lightInput = document.querySelector('#qr-light');
+        const qrContainer = document.querySelector('#qr-code');
+        const emptyState = document.querySelector('#empty-state');
+        const status = document.querySelector('#status');
+        const downloadButton = document.querySelector('#download-button');
+        const characterCount = document.querySelector('#character-count');
+        const wifiSecurity = document.querySelector('#wifi-security');
+        const wifiPasswordField = document.querySelector('#wifi-password-field');
+        let currentQrModel = null;
+
+        function getFieldValue(id) {
+            return document.querySelector(`#${id}`).value.trim();
+        }
+
+        function requireField(id, label) {
+            const value = getFieldValue(id);
+            if (!value) throw new Error(`Enter ${label}.`);
+            return value;
+        }
+
+        function escapeWifiValue(value) {
+            return value.replace(/[\\;,:"]/g, (character) => `\\${character}`);
+        }
+
+        function escapeVCardValue(value) {
+            return value.replace(/\r?\n/g, '\\n').replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;');
+        }
+
+        function escapeCalendarValue(value) {
+            return value.replace(/\r?\n/g, '\\n').replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;');
+        }
+
+        function toCalendarDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) throw new Error('Enter a valid event date and time.');
+            return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+        }
+
+        function getQrContent() {
+            const mode = typeInput.value;
+
+            if (mode === 'text') return getFieldValue('qr-content');
+
+            if (mode === 'wifi') {
+                const ssid = escapeWifiValue(requireField('wifi-name', 'a network name'));
+                const security = wifiSecurity.value;
+                const password = security === 'nopass' ? '' : escapeWifiValue(requireField('wifi-password', 'the network password'));
+                const hidden = document.querySelector('#wifi-hidden').checked ? 'true' : 'false';
+                return `WIFI:T:${security};S:${ssid};P:${password};H:${hidden};;`;
+            }
+
+            if (mode === 'contact') {
+                const fullName = requireField('contact-name', 'a full name');
+                const nameParts = fullName.split(/\s+/);
+                const familyName = escapeVCardValue(nameParts.pop());
+                const givenName = escapeVCardValue(nameParts.join(' '));
+                const lines = [
+                    'BEGIN:VCARD',
+                    'VERSION:3.0',
+                    `N:${familyName};${givenName};;;`,
+                    `FN:${escapeVCardValue(fullName)}`,
+                ];
+                const organization = getFieldValue('contact-company');
+                const phone = getFieldValue('contact-phone');
+                const email = getFieldValue('contact-email');
+                const website = getFieldValue('contact-website');
+
+                if (organization) lines.push(`ORG:${escapeVCardValue(organization)}`);
+                if (phone) lines.push(`TEL;TYPE=CELL:${escapeVCardValue(phone)}`);
+                if (email) lines.push(`EMAIL;TYPE=INTERNET:${escapeVCardValue(email)}`);
+                if (website) lines.push(`URL:${escapeVCardValue(website)}`);
+                lines.push('END:VCARD');
+                return lines.join('\r\n');
+            }
+
+            if (mode === 'email') {
+                const email = requireField('email-address', 'an email address');
+                if (!document.querySelector('#email-address').validity.valid) {
+                    throw new Error('Enter a valid email address.');
+                }
+
+                const parameters = new URLSearchParams();
+                const subject = getFieldValue('email-subject');
+                const body = getFieldValue('email-body');
+                if (subject) parameters.set('subject', subject);
+                if (body) parameters.set('body', body);
+                const query = parameters.toString().replace(/\+/g, '%20');
+                return `mailto:${email}${query ? `?${query}` : ''}`;
+            }
+
+            if (mode === 'phone') {
+                return `tel:${requireField('phone-number', 'a phone number')}`;
+            }
+
+            if (mode === 'sms') {
+                const number = requireField('sms-number', 'a phone number');
+                const message = getFieldValue('sms-message');
+                return `sms:${encodeURIComponent(number)}${message ? `?body=${encodeURIComponent(message)}` : ''}`;
+            }
+
+            if (mode === 'location') {
+                const latitudeInput = document.querySelector('#location-latitude');
+                const longitudeInput = document.querySelector('#location-longitude');
+                if (!latitudeInput.value || !latitudeInput.validity.valid) {
+                    throw new Error('Enter a latitude between -90 and 90.');
+                }
+                if (!longitudeInput.value || !longitudeInput.validity.valid) {
+                    throw new Error('Enter a longitude between -180 and 180.');
+                }
+
+                const latitude = latitudeInput.value;
+                const longitude = longitudeInput.value;
+                const label = getFieldValue('location-label');
+                const query = `${latitude},${longitude}${label ? `(${encodeURIComponent(label)})` : ''}`;
+                return `geo:${latitude},${longitude}?q=${query}`;
+            }
+
+            if (mode === 'event') {
+                const title = escapeCalendarValue(requireField('event-title', 'an event title'));
+                const start = getFieldValue('event-start');
+                const end = getFieldValue('event-end');
+                if (!start || !end) throw new Error('Enter a start and end date for the event.');
+                if (new Date(end) <= new Date(start)) throw new Error('The event end must be after its start.');
+
+                const lines = [
+                    'BEGIN:VCALENDAR',
+                    'VERSION:2.0',
+                    'PRODID:-//Single Page Project//QR Code Generator//EN',
+                    'BEGIN:VEVENT',
+                    `UID:${Date.now()}-${Math.random().toString(36).slice(2)}@single-page-project`,
+                    `DTSTAMP:${toCalendarDate(new Date().toISOString())}`,
+                    `DTSTART:${toCalendarDate(start)}`,
+                    `DTEND:${toCalendarDate(end)}`,
+                    `SUMMARY:${title}`,
+                ];
+                const location = getFieldValue('event-location');
+                const description = getFieldValue('event-description');
+                if (location) lines.push(`LOCATION:${escapeCalendarValue(location)}`);
+                if (description) lines.push(`DESCRIPTION:${escapeCalendarValue(description)}`);
+                lines.push('END:VEVENT', 'END:VCALENDAR');
+                return lines.join('\r\n');
+            }
+
+            throw new Error('Choose a supported QR code type.');
+        }
+
+        function updateVisibleFields() {
+            document.querySelectorAll('[data-mode-fields]').forEach((fields) => {
+                fields.hidden = fields.dataset.modeFields !== typeInput.value;
+            });
+            wifiPasswordField.hidden = wifiSecurity.value === 'nopass';
+        }
+
+        function buildQrSvg(model) {
+            const moduleCount = model.getModuleCount();
+            const quietZone = 4;
+            const canvasSize = Number(sizeInput.value);
+            const viewSize = moduleCount + quietZone * 2;
+            const style = styleInput.value;
+            const squareModules = [];
+            const styledModules = [];
+
+            for (let row = 0; row < moduleCount; row += 1) {
+                for (let column = 0; column < moduleCount; column += 1) {
+                    if (!model.isDark(row, column)) continue;
+
+                    const x = column + quietZone;
+                    const y = row + quietZone;
+                    const isFinderPattern = (column < 8 && row < 8)
+                        || (column >= moduleCount - 8 && row < 8)
+                        || (column < 8 && row >= moduleCount - 8);
+
+                    if (style === 'square' || isFinderPattern) {
+                        squareModules.push(`M${x} ${y}h1v1h-1z`);
+                    } else if (style === 'rounded') {
+                        styledModules.push(`<rect x="${x}" y="${y}" width="1" height="1" rx=".28"/>`);
+                    } else {
+                        styledModules.push(`<circle cx="${x + 0.5}" cy="${y + 0.5}" r=".43"/>`);
+                    }
+                }
+            }
+
+            const background = `<rect width="${viewSize}" height="${viewSize}" fill="${lightInput.value}"/>`;
+            const squarePath = squareModules.length
+                ? `<path fill="${darkInput.value}" d="${squareModules.join('')}"/>`
+                : '';
+            const styledPath = styledModules.length
+                ? `<g fill="${darkInput.value}">${styledModules.join('')}</g>`
+                : '';
+
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvasSize}" height="${canvasSize}" viewBox="0 0 ${viewSize} ${viewSize}" shape-rendering="geometricPrecision">${background}${squarePath}${styledPath}</svg>`;
+        }
+
+        function getRelativeLuminance(color) {
+            const channels = color.match(/[a-f\d]{2}/gi).map((channel) => parseInt(channel, 16) / 255);
+            const linear = channels.map((channel) => (
+                channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+            ));
+            return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+        }
+
+        function hasReadableContrast() {
+            const darkLuminance = getRelativeLuminance(darkInput.value);
+            const lightLuminance = getRelativeLuminance(lightInput.value);
+            return (Math.max(darkLuminance, lightLuminance) + 0.05)
+                / (Math.min(darkLuminance, lightLuminance) + 0.05) >= 4.5;
+        }
+
+        function updateQrCode() {
+            updateVisibleFields();
+            qrContainer.replaceChildren();
+            downloadButton.disabled = true;
+            status.classList.remove('error');
+            currentQrModel = null;
+            downloadButton.textContent = `Download ${formatInput.value.toUpperCase()}`;
+            status.classList.remove('warning');
+
+            let content;
+            try {
+                content = getQrContent();
+            } catch (error) {
+                emptyState.hidden = false;
+                characterCount.textContent = `0 / ${MAX_QR_BYTES} bytes`;
+                status.textContent = error.message;
+                status.classList.add('error');
+                return;
+            }
+
+            const contentBytes = new TextEncoder().encode(content).length;
+            characterCount.textContent = `${contentBytes} / ${MAX_QR_BYTES} bytes`;
+
+            if (!content) {
+                emptyState.hidden = false;
+                status.textContent = '';
+                return;
+            }
+
+            if (contentBytes > MAX_QR_BYTES) {
+                emptyState.hidden = false;
+                status.textContent = 'This QR code contains too much data. Shorten the content to 1,000 bytes or less.';
+                status.classList.add('error');
+                return;
+            }
+
+            if (typeof QRCode === 'undefined') {
+                emptyState.hidden = false;
+                status.textContent = 'The QR code library could not load. Check your internet connection and reload this page.';
+                status.classList.add('error');
+                return;
+            }
+
+            try {
+                const generator = new QRCode(document.createElement('div'), {
+                    text: content,
+                    width: Number(sizeInput.value),
+                    height: Number(sizeInput.value),
+                    correctLevel: QRCode.CorrectLevel.H,
+                });
+
+                currentQrModel = generator._oQRCode;
+                if (!currentQrModel || typeof currentQrModel.getModuleCount !== 'function') {
+                    throw new Error('The QR code could not be generated.');
+                }
+
+                const preview = document.createElement('img');
+                preview.alt = 'Generated QR code preview';
+                preview.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(buildQrSvg(currentQrModel))}`;
+                qrContainer.appendChild(preview);
+                emptyState.hidden = true;
+                downloadButton.disabled = false;
+                if (hasReadableContrast()) {
+                    status.textContent = 'Your QR code is ready.';
+                } else {
+                    status.textContent = 'Low color contrast may make this QR code difficult to scan.';
+                    status.classList.add('warning');
+                }
+            } catch (error) {
+                console.error('QR code generation failed:', error);
+                qrContainer.replaceChildren();
+                emptyState.hidden = false;
+                status.textContent = 'The QR code could not be generated. Check the details or try shorter content.';
+                status.classList.add('error');
+            }
+        }
+
+        function drawRoundedModule(context, x, y, size, radius) {
+            context.beginPath();
+            context.moveTo(x + radius, y);
+            context.arcTo(x + size, y, x + size, y + size, radius);
+            context.arcTo(x + size, y + size, x, y + size, radius);
+            context.arcTo(x, y + size, x, y, radius);
+            context.arcTo(x, y, x + size, y, radius);
+            context.closePath();
+            context.fill();
+        }
+
+        function renderQrCanvas(model, size) {
+            const context = document.createElement('canvas').getContext('2d');
+            const canvas = context.canvas;
+            const moduleCount = model.getModuleCount();
+            const quietZone = 4;
+            const viewSize = moduleCount + quietZone * 2;
+            const moduleSize = size / viewSize;
+
+            canvas.width = canvas.height = size;
+            context.fillStyle = lightInput.value;
+            context.fillRect(0, 0, size, size);
+            context.fillStyle = darkInput.value;
+
+            for (let row = 0; row < moduleCount; row += 1) {
+                for (let column = 0; column < moduleCount; column += 1) {
+                    if (!model.isDark(row, column)) continue;
+
+                    const x = (column + quietZone) * moduleSize;
+                    const y = (row + quietZone) * moduleSize;
+                    const isFinderPattern = (column < 8 && row < 8)
+                        || (column >= moduleCount - 8 && row < 8)
+                        || (column < 8 && row >= moduleCount - 8);
+
+                    if (styleInput.value === 'dots' && !isFinderPattern) {
+                        context.beginPath();
+                        context.arc(x + moduleSize / 2, y + moduleSize / 2, moduleSize * 0.43, 0, Math.PI * 2);
+                        context.fill();
+                    } else if (styleInput.value === 'rounded' && !isFinderPattern) {
+                        drawRoundedModule(context, x, y, moduleSize, moduleSize * 0.28);
+                    } else {
+                        context.fillRect(x, y, moduleSize, moduleSize);
+                    }
+                }
+            }
+
+            return canvas;
+        }
+
+        function downloadQrCode() {
+            if (!currentQrModel) return;
+
+            let temporaryUrl = null;
+            try {
+                const format = formatInput.value;
+                if (format === 'svg') {
+                    const blob = new Blob([buildQrSvg(currentQrModel)], { type: 'image/svg+xml;charset=utf-8' });
+                    temporaryUrl = URL.createObjectURL(blob);
+                } else {
+                    const mimeType = `image/${format}`;
+                    const dataUrl = renderQrCanvas(currentQrModel, Number(sizeInput.value)).toDataURL(mimeType);
+                    if (!dataUrl.startsWith(`data:${mimeType}`)) {
+                        throw new Error(`${format.toUpperCase()} export is not supported by this browser.`);
+                    }
+                    temporaryUrl = dataUrl;
+                }
+
+                const link = document.createElement('a');
+                link.download = `qr-code.${format === 'jpeg' ? 'jpg' : format}`;
+                link.href = temporaryUrl;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                status.textContent = `Downloaded qr-code.${format === 'jpeg' ? 'jpg' : format}.`;
+            } catch (error) {
+                console.error('QR code export failed:', error);
+                status.textContent = error.message || 'The QR code could not be downloaded.';
+                status.classList.add('error');
+            } finally {
+                if (temporaryUrl && formatInput.value === 'svg') {
+                    setTimeout(() => URL.revokeObjectURL(temporaryUrl), 1000);
+                }
+            }
+        }
+
+        settingsForm.addEventListener('input', updateQrCode);
+        settingsForm.addEventListener('change', updateQrCode);
+        downloadButton.addEventListener('click', downloadQrCode);
+        document.querySelector('#clear-button').addEventListener('click', () => {
+            const activeFields = document.querySelector(`[data-mode-fields="${typeInput.value}"]`);
+            activeFields.querySelectorAll('input:not([type="checkbox"]), textarea').forEach((input) => {
+                input.value = '';
+            });
+            activeFields.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                input.checked = false;
+            });
+            if (typeInput.value === 'wifi') wifiSecurity.value = 'WPA';
+            if (typeInput.value === 'text') contentInput.focus();
+            updateQrCode();
+        });
+
+        updateQrCode();
+    </script>
+</body>
+
+</html>

@@ -160,6 +160,11 @@
             font-size: 13px;
         }
 
+        .tool-list {
+            display: grid;
+            gap: 16px;
+        }
+
         .tool-card {
             position: relative;
             display: grid;
@@ -426,20 +431,34 @@
         <section aria-labelledby="tools-title">
             <div class="tools-heading">
                 <h2 id="tools-title">Explore the tools</h2>
-                <span class="tools-count">1 tool available</span>
+                <span class="tools-count">2 tools available</span>
             </div>
-            <a class="tool-card" href="resume-builder.html">
-                <div class="tool-copy">
-                    <span class="tool-category">Career · PDF</span>
-                    <h3>Resume Builder</h3>
-                    <p>
-                        Create a polished resume with a live preview. Customize the layout,
-                        add your experience, and download or print it as a PDF.
-                    </p>
-                </div>
-                <div class="tool-visual" aria-hidden="true"><span>PDF</span></div>
-                <span class="tool-arrow" aria-hidden="true">↗</span>
-            </a>
+            <div class="tool-list">
+                <a class="tool-card" href="resume-builder.html">
+                    <div class="tool-copy">
+                        <span class="tool-category">Career · PDF</span>
+                        <h3>Resume Builder</h3>
+                        <p>
+                            Create a polished resume with a live preview. Customize the layout,
+                            add your experience, and download or print it as a PDF.
+                        </p>
+                    </div>
+                    <div class="tool-visual" aria-hidden="true"><span>PDF</span></div>
+                    <span class="tool-arrow" aria-hidden="true">↗</span>
+                </a>
+                <a class="tool-card" href="qr-code-generator.html">
+                    <div class="tool-copy">
+                        <span class="tool-category">Sharing · QR</span>
+                        <h3>QR Code Generator</h3>
+                        <p>
+                            Make custom QR codes for links, Wi-Fi, contacts, and more. Style
+                            the shapes, choose a file type, and download your code.
+                        </p>
+                    </div>
+                    <div class="tool-visual" aria-hidden="true"><span>QR</span></div>
+                    <span class="tool-arrow" aria-hidden="true">↗</span>
+                </a>
+            </div>
         </section>
 
         <section class="about" aria-label="About this project">

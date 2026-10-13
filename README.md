@@ -18,8 +18,9 @@ To use the pages locally, open `index.html` in a modern web browser. There is no
 
 ```text
 Single-Page-Project/
-├── index.html          # Collection homepage and tool directory
-├── resume-builder.html # Resume Builder tool
+├── index.html             # Collection homepage and tool directory
+├── resume-builder.html    # Resume Builder tool
+├── qr-code-generator.html # QR Code Generator tool
 └── README.md
 ```
 
@@ -31,7 +32,7 @@ Add new tools as standalone HTML pages in the repository root, then add a descri
 - CSS
 - JavaScript
 
-Tools may use external browser libraries or assets when needed; document any such requirements with the relevant page.
+The QR Code Generator supports plain text and links, Wi-Fi network details, vCard contacts, email, phone calls, SMS, map locations, and calendar events. Customize square, rounded, or circular modules and export as PNG, JPEG, SVG, or WebP. It uses QRCode.js from cdnjs, so an internet connection is required to generate codes. Scanner behavior depends on the phone and QR reader.
 
 ## Publishing with GitHub Pages
 
