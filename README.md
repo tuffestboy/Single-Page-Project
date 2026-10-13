@@ -33,7 +33,3 @@ Add new tools as standalone HTML pages in the repository root, then add a descri
 - JavaScript
 
 The QR Code Generator supports plain text and links, Wi-Fi network details, vCard contacts, email, phone calls, SMS, map locations, and calendar events. Customize square, rounded, or circular modules and export as PNG, JPEG, SVG, or WebP. It uses QRCode.js from cdnjs, so an internet connection is required to generate codes. Scanner behavior depends on the phone and QR reader.
-
-## Publishing with GitHub Pages
-
-In the repository settings, open **Pages**, select the branch you want to publish and the repository root (`/`) as the source, then save. GitHub Pages will serve `index.html` as the site homepage. Tool links are relative, so they work both on a GitHub Pages project site and when the pages are opened locally.
